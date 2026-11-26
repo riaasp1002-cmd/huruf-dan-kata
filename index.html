@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Petualangan Kiki: Buku Lawan Kata</title>
+<style>
+:root{--ink:#1d2b53;--p:#b83c00;--g:#12703c;--r:#c5221f;--b:#1f5fd0;--y:#ffd23f}
+*{box-sizing:border-box;touch-action:manipulation}
+html,body{margin:0;height:100%;overflow:hidden;background:#111;font-family:"Trebuchet MS",system-ui,sans-serif;color:var(--ink)}
+#wrap{position:fixed;inset:0}
+#stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;background:linear-gradient(#bfe8ff,#fff4d6);overflow:hidden;font-size:28px}
+#stage.bg{background-size:100% 100%,auto;background-position:center;background-repeat:no-repeat}
+.bg .scr>h1,.bg .scr>h2,.bg .scr>p,.bg .scr>b,.bg .pm>p{background:rgba(255,255,255,.88);border-radius:16px;padding:4px 18px}
+.scr{position:absolute;inset:0;padding:24px 50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+h1{font-size:50px;margin:0;line-height:1.1}h2{font-size:40px;margin:0}p{margin:0}
+.btn{min-width:64px;min-height:64px;font:inherit;font-weight:700;font-size:28px;border:0;border-radius:18px;padding:8px 28px;background:var(--p);color:#fff;box-shadow:0 5px 0 rgba(0,0,0,.3);cursor:pointer}
+.btn.alt{background:var(--b)}.btn.gr{background:var(--g)}.btn:disabled{background:#6b7280;box-shadow:none;cursor:not-allowed}
+:focus-visible{outline:5px solid #000;outline-offset:2px}
+.row{display:flex;gap:40px;align-items:center;width:100%}.col{display:flex;flex-direction:column;gap:18px;align-items:center;flex:1}
+.cv{width:560px;height:600px;display:flex;align-items:center;justify-content:center}.cv img{width:100%;height:100%;object-fit:contain}
+.card{background:#fff;border:4px solid var(--ink);border-radius:24px;padding:20px 28px;max-width:1000px}
+#mute,#voice{position:absolute;right:14px;top:8px;z-index:50;cursor:pointer;width:72px;height:72px;padding:0;font-size:36px;background:#fff;color:var(--ink);border:4px solid var(--ink);border-radius:50%}
+#voice{right:96px}
+.hud{position:absolute;left:0;right:180px;top:0;height:84px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-weight:700;background:rgba(255,255,255,.85);border-bottom:4px solid var(--ink)}
+.pm{position:absolute;left:0;right:0;top:84px;bottom:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:0 40px}
+#bar{position:absolute;left:0;right:0;bottom:0;height:160px;display:flex;align-items:center;gap:16px;padding:0 24px;background:#fff;border-top:4px solid var(--ink)}
+#msg{flex:1;font-size:24px;line-height:1.25;font-weight:700;padding:8px 14px;border-radius:14px;min-height:64px;display:flex;align-items:center}
+#msg.ok{background:#d8f5e3;color:#0b4d28}#msg.no{background:#ffe1df;color:#8a1410}#msg.hi{background:#fff2b8}
+.q{font-size:44px;font-weight:800}.big{font-size:120px}
+.opts{display:flex;gap:30px;flex-wrap:wrap;justify-content:center}
+.opt{width:210px;height:210px;border-radius:50%;border:5px solid var(--ink);background:#ffe27a;font:inherit;font-size:36px;font-weight:800;color:var(--ink);cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.opt.ok{background:#8be0a9}.opt:disabled{opacity:.45;cursor:default}
+.sent{font-size:40px;font-weight:700;line-height:1.5}
+.slot{display:inline-block;min-width:200px;height:72px;line-height:64px;border:4px dashed var(--ink);border-radius:14px;background:#fff;vertical-align:middle;padding:0 12px}.slot.ok{background:#8be0a9;border-style:solid}
+.cards{display:flex;gap:30px}
+.dc{min-width:170px;height:84px;font:inherit;font-size:34px;font-weight:800;border:4px solid var(--ink);border-radius:16px;background:#a8d4ff;color:var(--ink);cursor:grab;touch-action:none;position:relative;user-select:none}
+.dc.drag{z-index:20;box-shadow:0 12px 20px rgba(0,0,0,.4);cursor:grabbing}.dc:disabled{opacity:.4}
+.tk{font:inherit;font-size:38px;font-weight:700;border:4px solid var(--ink);border-radius:14px;background:#fff;padding:4px 14px;min-height:64px;color:var(--ink);cursor:pointer;margin:6px}
+.tk.sel{background:var(--y)}.tk.ok{background:#8be0a9}
+.map{display:flex;gap:30px;align-items:center}.node{width:260px;min-height:290px;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center}
+.lock{opacity:.5}.st{font-size:44px;letter-spacing:4px}
+.list{max-height:330px;overflow:auto;text-align:left;font-size:24px;width:1000px}.list div{margin:6px 0;padding:8px 12px;background:#fff;border-radius:12px;border-left:8px solid var(--r)}
+#modal{position:absolute;inset:0;background:rgba(0,0,0,.6);z-index:80;display:none;align-items:center;justify-content:center}#modal.on{display:flex}
+#modal .card{display:flex;flex-direction:column;gap:16px;align-items:center}#modal img{max-height:380px;max-width:600px;object-fit:contain}
+.shake{animation:sh .5s}.pop{animation:pp .5s}
+@keyframes sh{20%,60%{transform:translateX(-12px)}40%,80%{transform:translateX(12px)}}
+@keyframes pp{50%{transform:scale(1.2)}}
+.cf{position:absolute;font-size:30px;pointer-events:none;z-index:90;animation:cf .6s forwards}
+@keyframes cf{to{transform:translate(var(--dx),var(--dy));opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.cf{display:none}}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+<button id="mute" aria-label="Matikan atau nyalakan suara">🔊</button>
+<button id="voice" aria-label="Matikan atau nyalakan suara penjelasan">🗣️</button>
+<div id="app"></div>
+<div id="modal"></div>
+</div></div>
+<script>
+/* ================= GAME_DATA: EDIT DI SINI SAJA ================= */
+const GAME_DATA = {
+  // Judul, tokoh, dan identitas materi
+  judul: "🐰 Petualangan Kiki: Buku Lawan Kata",
+  tokoh: "Kiki si Kelinci",
+  // Identitas pengembang (tampil di halaman pembuka dan jendela Pengembang)
+  profil: { nama: "Ria Agustin Setya Sakti Pratama", sekolah: "SD Pekayon 05" },
+  // Teks yang dibacakan suara AI (pembaca suara bawaan peramban, offline) untuk halaman tetap
+  suara: {
+    cover: "Halo! Selamat datang di Petualangan Kiki. Ayo belajar lawan kata bersama Kiki si Kelinci. Tekan tombol Mulai!",
+    peta: "Ini peta misi. Pilih misi yang terbuka. Selesaikan satu misi untuk membuka misi berikutnya."
+  },
+  mapel: "Bahasa Indonesia • Fase A / Kelas 2 • Lawan Kata (Antonim)",
+  // Nama file aset (semua offline di folder ./assets/)
+  aset: {
+    cover: "./assets/cover.png",
+    background: "./assets/background.png", // latar semua layar selain cover
+    benar: "./assets/benar.mp3",
+    salah: "./assets/salah.mp3",
+    musik: "./assets/musiklatar.mp3",
+    pembuka: "./assets/pembuka.mp4",
+    pengembang: ["./assets/pengembang.jpg", "./assets/pengembang.jpeg", "./assets/pengembang.png"]
+  },
+  // Teks layar (maksimal 2 kalimat per layar)
+  narasiAwal: "Malam ini ada pesta keluarga, tetapi halaman Buku Lawan Kata milik Nenek tercecer! Ayo bantu Kiki menyusunnya kembali.",
+  instruksi: [
+    "Lawan kata adalah kata yang artinya berlawanan. Contoh: BESAR ↔ KECIL.",
+    "Ketuk, seret, atau pilih kata. Kamu punya 3 ❤️ di setiap misi dan 1 💡 petunjuk per soal."
+  ],
+  contohInstruksi: "Contoh: tinggi ↔ pendek",
+  // Daftar misi. Pada setiap butir: k = soal; o = pilihan ["teks","alasan salah"] (PILIHAN PERTAMA = BENAR);
+  // b = penguatan konsep saat benar; h = petunjuk. tampil = jumlah soal yang ditampilkan dari bank soal.
+  misi: [
+    { judul: "Balon Lawan Kata", ikon: "🎈", tipe: "tap", tampil: 5,
+      narasi: "Halaman pertama terbang bersama balon! Ketuk balon yang berisi lawan katanya.",
+      tujuan: "Membaca kata dan mengenali lawan katanya.",
+      perintah: "Ketuk balon LAWAN KATA dari:",
+      konsep: "Lawan kata = kata yang artinya berlawanan, bukan sama atau hanya berhubungan.",
+      petunjukGagal: "Ingat: lawan kata artinya BERLAWANAN. Kata yang artinya sama (sinonim) atau hanya berhubungan bukan lawan kata.",
+      butir: [
+        { k: "BESAR", o: [["kecil"], ["gede", "Gede artinya sama dengan besar. Lawan kata harus artinya berlawanan, bukan sama."], ["rumah", "Rumah hanya berhubungan dengan besar, tetapi artinya tidak berlawanan."]], b: "Besar berlawanan dengan kecil.", h: "Lawan besar adalah ukuran yang sedikit." },
+        { k: "TINGGI", o: [["pendek"], ["jangkung", "Jangkung artinya sama dengan tinggi, jadi bukan lawan kata."], ["ayah", "Ayah adalah anggota keluarga, bukan kata yang berlawanan dengan tinggi."]], b: "Tinggi berlawanan dengan pendek.", h: "Ayah tinggi, adik..." },
+        { k: "TUA", o: [["muda"], ["renta", "Renta artinya sangat tua, jadi artinya sama dan bukan lawan."], ["nenek", "Nenek orang yang tua, tetapi nenek bukan lawan kata tua."]], b: "Tua berlawanan dengan muda.", h: "Kakek tua, kakak masih..." },
+        { k: "PANAS", o: [["dingin"], ["hangat", "Hangat itu agak panas, bukan berlawanan. Lawan panas adalah dingin."], ["api", "Api hanya berhubungan dengan panas, artinya tidak berlawanan."]], b: "Panas berlawanan dengan dingin.", h: "Es itu..." },
+        { k: "NAIK", o: [["turun"], ["mendaki", "Mendaki hampir sama dengan naik, jadi bukan lawan kata."], ["tangga", "Tangga hanya berhubungan dengan naik, artinya tidak berlawanan."]], b: "Naik berlawanan dengan turun.", h: "Ke atas lawannya ke bawah." },
+        { k: "SENANG", o: [["sedih"], ["gembira", "Gembira artinya sama dengan senang, bukan lawan kata."], ["tertawa", "Tertawa hanya berhubungan dengan senang, bukan berlawanan."]], b: "Senang berlawanan dengan sedih.", h: "Perasaan yang tidak gembira." },
+        { k: "DEKAT", o: [["jauh"], ["sebelah", "Sebelah mirip dengan dekat, jadi bukan lawan kata."], ["rumah", "Rumah hanya berhubungan dengan dekat, artinya tidak berlawanan."]], b: "Dekat berlawanan dengan jauh.", h: "Rumah Nenek tidak dekat, tetapi..." },
+        { k: "GEMUK", o: [["kurus"], ["bulat", "Bulat itu bentuk, bukan lawan gemuk. Lawan gemuk adalah kurus."], ["perut", "Perut hanya berhubungan dengan gemuk, bukan kata yang berlawanan."]], b: "Gemuk berlawanan dengan kurus.", h: "Badan yang tidak gemuk." }
+      ] },
+    { judul: "Melengkapi Kalimat Keluarga", ikon: "🧩", tipe: "drag", tampil: 5,
+      narasi: "Kalimat di halaman kedua ada yang bolong. Seret kartu kata ke kotak kosong!",
+      tujuan: "Membaca kalimat tentang keluarga dan memakai lawan kata dengan tepat.",
+      perintah: "Seret kartu ke kotak kosong:",
+      konsep: "Lawan kata dipakai di kalimat untuk membandingkan dua hal yang berlawanan.",
+      petunjukGagal: "Baca kalimat sampai habis. Cari kata yang berlawanan dengan kata sebelum koma, bukan kata yang sama.",
+      butir: [
+        { k: "Ayah badannya tinggi, adik badannya ___.", o: [["pendek"], ["tinggi", "Kata itu sama dengan kata di depan. Lawan kata harus berbeda dan berlawanan."], ["besar", "Besar lawannya kecil. Lawan tinggi adalah pendek."]], b: "Tinggi dilawan dengan pendek.", h: "Adik lebih ... dari ayah." },
+        { k: "Kakek sudah tua, kakak masih ___.", o: [["muda"], ["renta", "Renta artinya sangat tua, sama dengan tua."], ["kecil", "Kecil lawannya besar, bukan tua."]], b: "Tua dilawan dengan muda.", h: "Kakak belum tua." },
+        { k: "Pagi hari Ibu membuka pintu, malam hari Ibu ___ pintu.", o: [["menutup"], ["membuka", "Kata itu sama dengan kata di depan, bukan berlawanan."], ["mengunci", "Mengunci mirip dengan menutup, bukan lawan kata membuka."]], b: "Membuka dilawan dengan menutup.", h: "Lawan buka adalah tutup." },
+        { k: "Teh Nenek panas, es sirup adik ___.", o: [["dingin"], ["hangat", "Hangat itu agak panas, bukan lawannya."], ["manis", "Manis itu rasa, bukan lawan dari panas."]], b: "Panas dilawan dengan dingin.", h: "Es itu terasa..." },
+        { k: "Adik duduk di atas kursi, kucing di ___ kursi.", o: [["bawah"], ["atas", "Kata itu sama dengan kata di depan, bukan berlawanan."], ["samping", "Samping itu arah lain, bukan lawan dari atas."]], b: "Atas dilawan dengan bawah.", h: "Lawan atas adalah bawah." },
+        { k: "Ibu tertawa karena senang, adik menangis karena ___.", o: [["sedih"], ["gembira", "Gembira sama dengan senang, bukan lawannya."], ["marah", "Marah juga perasaan, tetapi lawan senang yang tepat adalah sedih."]], b: "Senang dilawan dengan sedih.", h: "Menangis biasanya karena..." },
+        { k: "Rumah Nenek dekat, rumah Paman ___.", o: [["jauh"], ["dekat", "Kata itu sama dengan kata di depan, bukan berlawanan."], ["sebelah", "Sebelah itu mirip dekat, jadi bukan lawan."]], b: "Dekat dilawan dengan jauh.", h: "Lawan dekat adalah jauh." }
+      ] },
+    { judul: "Detektif Kata", ikon: "🔍", tipe: "pick2", tampil: 5,
+      narasi: "Halaman terakhir berisi cerita keluarga. Temukan dua kata yang saling berlawanan di setiap cerita!",
+      tujuan: "Membaca cerita pendek dan menemukan pasangan lawan kata di dalamnya.",
+      perintah: "Ketuk 2 kata yang berlawanan, lalu tekan Periksa:",
+      konsep: "Pasangan lawan kata bisa ditemukan di dalam cerita bila kita membaca dengan teliti.",
+      petunjukGagal: "Cari dua kata yang artinya bertolak belakang, bukan dua kata yang berdekatan di kalimat.",
+      butir: [
+        { k: "Ayah pergi pagi dan pulang sore.", p: [["pergi", "pulang"], ["pagi", "sore"]], s: "Dua kata itu tidak berlawanan. Kata yang berdekatan di kalimat belum tentu lawan kata.", b: "Pergi ↔ pulang dan pagi ↔ sore adalah lawan kata.", h: "Ada dua pasangan, pilih salah satu pasang." },
+        { k: "Kakak tinggi dan adik pendek.", p: [["tinggi", "pendek"]], s: "Kakak dan adik itu orang, bukan lawan kata. Cari kata sifatnya.", b: "Tinggi ↔ pendek.", h: "Lihat kata sifat badan." },
+        { k: "Nenek duduk di depan, Kakek duduk di belakang.", p: [["depan", "belakang"]], s: "Duduk muncul dua kali tetapi artinya sama. Lawan kata harus berbeda arti.", b: "Depan ↔ belakang.", h: "Cari dua tempat duduk yang berlawanan." },
+        { k: "Es krim itu manis, tetapi teh ini pahit.", p: [["manis", "pahit"]], s: "Dua kata itu tidak berlawanan. Cari dua rasa yang berlawanan.", b: "Manis ↔ pahit.", h: "Lihat kata tentang rasa." },
+        { k: "Kakak rajin belajar, adik malas belajar.", p: [["rajin", "malas"]], s: "Belajar muncul dua kali, tetapi artinya sama. Cari sifat yang berlawanan.", b: "Rajin ↔ malas.", h: "Lihat sifat kakak dan adik." },
+        { k: "Rumah Bibi besar, kamar adik kecil.", p: [["besar", "kecil"]], s: "Dua kata itu bukan lawan kata. Cari dua kata ukuran.", b: "Besar ↔ kecil.", h: "Cari dua kata tentang ukuran." }
+      ] }
+  ]
+};
+/* ================= LOGIKA GIM (tidak perlu diubah) ================= */
+const D=GAME_DATA,$=s=>document.querySelector(s);
+let S={},scale=1,muted=false,started=false,A={},hs=0;
+function fit(){const w=innerWidth,h=innerHeight;scale=Math.min(w/1280,h/720);$('#stage').style.transform=`translate(${(w-1280*scale)/2}px,${(h-720*scale)/2}px) scale(${scale})`}
+addEventListener('resize',fit);fit();
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function initAudio(e){if(started)return;started=true;if(S.screen==='cover'&&!(e&&e.target&&e.target.closest&&e.target.closest('[data-a],#voice,#mute')))say(D.suara.cover);for(const k of ['benar','salah','musik']){const a=new Audio(D.aset[k]);if(k=='musik'){a.loop=true;a.volume=.25}a.addEventListener('error',()=>{A[k]=null});A[k]=a}music()}
+function music(){if(!muted&&A.musik&&S.screen!=='video')A.musik.play().catch(()=>{})}
+function snd(k){if(muted||!A[k])return;try{A[k].currentTime=0;A[k].play().catch(()=>{})}catch(e){}}
+document.addEventListener('pointerdown',initAudio);document.addEventListener('keydown',initAudio);
+/* ---- suara AI penjelas (Web Speech bawaan peramban, tanpa internet) ---- */
+let voiceOn=true,idVoice=null,sayT=null,lastSay='';
+function pickVoice(){try{idVoice=speechSynthesis.getVoices().find(v=>/^id/i.test(v.lang))||null}catch(e){}}
+try{speechSynthesis.onvoiceschanged=pickVoice;pickVoice()}catch(e){}
+function stopSay(){try{speechSynthesis.cancel()}catch(e){}}
+const clean=t=>t.replace(/↔/g,' berlawanan dengan ').replace(/_{3}/g,' titik titik ').replace(/\.{3}/g,' titik titik ').replace(/[\u2190-\u21FF\u2600-\u27BF\u2B00-\u2BFF\uFE0F\u{1F300}-\u{1FAFF}]/gu,'');
+function say(t,d){clearTimeout(sayT);stopSay();if(t)lastSay=t;if(!t||!voiceOn||muted||!started||!window.speechSynthesis)return;sayT=setTimeout(()=>{try{const u=new SpeechSynthesisUtterance(clean(t));u.lang='id-ID';u.rate=.9;u.pitch=1.15;if(idVoice)u.voice=idVoice;speechSynthesis.speak(u)}catch(e){}},d||0)}
+$('#voice').onclick=()=>{voiceOn=!voiceOn;$('#voice').textContent=voiceOn?'🗣️':'🤐';if(voiceOn)say(lastSay);else stopSay()};
+$('#mute').onclick=()=>{muted=!muted;$('#mute').textContent=muted?'🔇':'🔊';if(muted){A.musik&&A.musik.pause();stopSay()}else{music();say(lastSay)}};
+try{hs=+localStorage.getItem('kikiHS')||0}catch(e){}
+function newGame(){S={stars:[0,0,0],scores:[0,0,0],done:[false,false,false],wrong:[],screen:'cover'}}
+const total=()=>S.scores.reduce((a,b)=>a+b,0),totStars=()=>S.stars.reduce((a,b)=>a+b,0);
+const star=n=>'⭐'.repeat(n)+'☆'.repeat(3-n);
+function scr(h,c,t){S.screen=c||'';{const st=$('#stage');st.classList.toggle('bg',c!=='cover');st.style.backgroundImage=c!=='cover'?`url("${D.aset.background}"),linear-gradient(#bfe8ff,#fff4d6)`:'';}say(t||'');$('#app').innerHTML=`<div class="scr">${h}</div>`}
+function modal(h){const m=$('#modal');m.innerHTML=`<div class="card">${h}<button class="btn" data-a="tutup" aria-label="Tutup">Tutup</button></div>`;m.classList.add('on')}
+function fx(el,c){el.classList.add(c);setTimeout(()=>el.classList.remove(c),600)}
+function conf(el){const st=$('#stage').getBoundingClientRect(),r=el.getBoundingClientRect();for(let i=0;i<8;i++){const p=document.createElement('i');p.className='cf';p.textContent='✨';p.style.left=(r.left+r.width/2-st.left)/scale+'px';p.style.top=(r.top+r.height/2-st.top)/scale+'px';p.style.setProperty('--dx',Math.random()*200-100+'px');p.style.setProperty('--dy',-Math.random()*140-20+'px');$('#stage').appendChild(p);setTimeout(()=>p.remove(),600)}}
+/* ---- layar ---- */
+function cover(){newGame();scr(`<img src="${D.aset.cover}" alt="Sampul gim" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';document.getElementById('cvfb').style.display='flex'"><div id="cvfb" style="display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px"><h1>${D.judul}</h1><p>${D.mapel}</p><p>Tokoh: ${D.tokoh}</p></div><div style="position:absolute;left:0;right:0;bottom:28px;display:flex;gap:30px;justify-content:center"><button class="btn gr" data-a="mulai" aria-label="Mulai bermain">▶ Mulai</button><button class="btn alt" data-a="dev" aria-label="Lihat pengembang">👤 Pengembang</button></div>`,'cover',D.suara.cover)}
+function video(){if(!D.aset.pembuka)return act.lewati();scr(`<video src="${D.aset.pembuka}" autoplay playsinline style="width:900px;height:500px;object-fit:contain;background:#000" onended="act.lewati()" onerror="act.lewati()"></video><button class="btn" data-a="lewati" aria-label="Lewati video">Lewati ⏭</button>`,'video');A.musik&&A.musik.pause()}
+function instr(){S.screen='instr';scr(`<h2>Cara Bermain</h2><div class="card"><p>${D.narasiAwal}</p></div><div class="card" style="background:#fff7c2"><p>${D.contohInstruksi}</p><p>🎈 Ketuk &nbsp; 🧩 Seret &nbsp; 🔍 Cari kata</p></div>${D.instruksi.map(t=>`<p>${t}</p>`).join('')}<button class="btn gr" data-a="peta" aria-label="Ke peta misi">Ke Peta Misi ▶</button>`,'instr',D.narasiAwal+' '+D.contohInstruksi+'. '+D.instruksi.join(' ')+' Tekan tombol Ke Peta Misi.')}
+function peta(){const all=S.done.every(x=>x);scr(`<h2>Peta Misi</h2><div class="map">${D.misi.map((m,i)=>{const ok=i==0||S.done[i-1];return `<div class="card node ${ok?'':'lock'}"><div class="big" style="font-size:70px">${ok?m.ikon:'🔒'}</div><b>Misi ${i+1}</b><span style="font-size:26px">${m.judul}</span><span class="st">${star(S.stars[i])}</span><button class="btn" data-a="misi" data-v="${i}" ${ok?'':'disabled'} aria-label="Main misi ${i+1}">${S.done[i]?'Ulangi':'Main'}</button></div>`}).join('')}</div>${all?'<button class="btn gr" data-a="hasil" aria-label="Lihat hasil akhir">🏆 Lihat Hasil</button>':''}`,'peta',D.suara.peta)}
+function goal(i){const m=D.misi[i];S.m=i;scr(`<h2>${m.ikon} Misi ${i+1}: ${m.judul}</h2><div class="card"><p>${m.narasi}</p></div><div class="card" style="background:#e3f0ff"><b>Tujuan:</b> ${m.tujuan}</div><button class="btn gr" data-a="go" aria-label="Mulai misi">Mulai Misi ▶</button><button class="btn alt" data-a="peta" aria-label="Kembali ke peta">🗺️ Peta</button>`,'goal','Misi '+(i+1)+'. '+m.judul+'. '+m.narasi+' '+m.tujuan)}
+function startMission(){const m=D.misi[S.m];S.wrong=S.wrong.filter(w=>w.m!==S.m);S.q=shuffle(m.butir).slice(0,m.tampil).map(it=>{const x={...it};if(it.o)x.opts=shuffle(it.o.map((o,i)=>({t:o[0],why:o[1],ok:i==0})));if(it.k&&it.p)x.tk=it.k.split(' ');return x});S.qi=0;S.lives=3;S.score=0;S.streak=0;play()}
+function hud(){const m=D.misi[S.m];return `<div class="hud"><span>Misi ${S.m+1} • Soal ${S.qi+1}/${S.q.length}</span><span aria-label="Nyawa ${S.lives}">${'❤️'.repeat(S.lives)+'🖤'.repeat(3-S.lives)}</span><span>Skor ${S.score}</span><span>⭐ ${totStars()}/9</span></div>`}
+function play(){if(S.qi>=S.q.length)return summary();const m=D.misi[S.m],it=S.q[S.qi];S.att=0;S.hint=false;S.res=false;S.it=it;
+scr(`${hud()}<div class="pm"><p>${m.perintah}</p><div id="area"></div></div><div id="bar"><button class="btn alt" id="hb" data-a="hint" aria-label="Petunjuk">💡 Petunjuk</button><div id="msg" aria-live="polite"></div><button class="btn gr" id="nx" data-a="lanjut" hidden aria-label="Lanjut">Lanjut ▶</button></div>`,'play',m.perintah+' '+it.k);
+const ar=$('#area');
+if(m.tipe=='tap'){ar.innerHTML=`<div class="q">${it.k}</div><div class="opts">${it.opts.map((o,i)=>`<button class="opt" data-i="${i}" aria-label="Pilihan ${o.t}">${o.t}</button>`).join('')}</div>`;
+ar.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(S.res)return;const o=it.opts[b.dataset.i];judge(o.ok,o.why,b);if(!o.ok)b.disabled=true;else b.classList.add('ok')})}
+else if(m.tipe=='drag'){ar.innerHTML=`<div class="sent">${it.k.replace('___','<span class="slot" id="slot"></span>')}</div><div class="cards">${it.opts.map((o,i)=>`<button class="dc" data-i="${i}" aria-label="Kartu ${o.t}">${o.t}</button>`).join('')}</div>`;
+ar.querySelectorAll('.dc').forEach(c=>dragInit(c,it))}
+else{ar.innerHTML=`<div class="sent" id="tks">${it.tk.map((w,i)=>`<button class="tk" data-i="${i}" aria-label="Kata ${w}">${w}</button>`).join('')}</div><button class="btn gr" id="chk" disabled aria-label="Periksa">Periksa ✔</button>`;
+S.sel=[];const chk=$('#chk');ar.querySelectorAll('.tk').forEach(b=>b.onclick=()=>{if(S.res)return;const i=+b.dataset.i,p=S.sel.indexOf(i);if(p>=0){S.sel.splice(p,1);b.classList.remove('sel')}else if(S.sel.length<2){S.sel.push(i);b.classList.add('sel')}chk.disabled=S.sel.length!=2});
+chk.onclick=()=>{if(S.res||S.sel.length!=2)return;const n=w=>w.toLowerCase().replace(/[^a-z]/g,''),a=S.sel.map(i=>n(it.tk[i]));const ok=it.p.some(p=>a.includes(p[0])&&a.includes(p[1])&&a[0]!=a[1]);judge(ok,it.s,chk);if(ok)S.sel.forEach(i=>ar.querySelectorAll('.tk')[i].classList.add('ok'));else{S.sel=[];ar.querySelectorAll('.tk').forEach(b=>b.classList.remove('sel'));chk.disabled=true}}}}
+function dragInit(c,it){let d=null;const slot=()=>$('#slot');
+c.onpointerdown=e=>{if(S.res||c.disabled)return;c.setPointerCapture(e.pointerId);d={x:e.clientX,y:e.clientY,mv:false};c.classList.add('drag')};
+c.onpointermove=e=>{if(!d)return;const dx=(e.clientX-d.x)/scale,dy=(e.clientY-d.y)/scale;if(Math.hypot(dx,dy)>8)d.mv=true;c.style.transform=`translate(${dx}px,${dy}px)`};
+const end=e=>{if(!d)return;const mv=d.mv;d=null;c.classList.remove('drag');const r=slot().getBoundingClientRect(),q=c.getBoundingClientRect(),cx=q.left+q.width/2,cy=q.top+q.height/2;const hit=cx>r.left-30*scale&&cx<r.right+30*scale&&cy>r.top-40*scale&&cy<r.bottom+40*scale;c.style.transform='';if(e.type=='pointerup'&&(hit||!mv))drop(c,it)};
+c.onpointerup=end;c.onpointercancel=end;c.onclick=e=>{if(e.detail===0)drop(c,it)}}
+function drop(c,it){if(S.res)return;const o=it.opts[c.dataset.i],s=$('#slot');s.textContent=o.t;judge(o.ok,o.why,s);if(o.ok){s.classList.add('ok');document.querySelectorAll('.dc').forEach(x=>x.disabled=true)}else{c.disabled=true;setTimeout(()=>{if(!S.res)s.textContent=''},700)}}
+function setMsg(c,t){const m=$('#msg');m.className=c;m.innerHTML=t}
+function judge(ok,why,el){const it=S.it;S.att++;
+if(ok){const p=(S.att==1?100:50)*(S.hint?.5:1);S.streak++;const bo=S.streak>=3?20:0;S.score+=p+bo;S.res=true;fx(el,'pop');conf(el);snd('benar');setMsg('ok',`✅ ${it.b} +${p+bo}${bo?' (bonus beruntun!)':''}`);say(it.b,300);$('#nx').hidden=false;$('#nx').focus()}
+else{S.lives--;S.streak=0;fx(el,'shake');snd('salah');if(!S.wrong.some(w=>w.m==S.m&&w.k==it.k))S.wrong.push({m:S.m,k:it.k,jawab:correct(it),why})
+const out=S.lives<=0||S.att>=2;if(out){S.res=true;reveal(it);setMsg('no',`❌ ${why} Jawaban: ${correct(it)}.`);say(why+' Jawabannya '+correct(it),300);$('#nx').hidden=false;$('#nx').focus()}else{setMsg('no',`❌ ${why} Coba lagi!`);say(why+' Coba lagi ya!',300)}}
+document.querySelector('.hud span:nth-child(2)').textContent='❤️'.repeat(Math.max(S.lives,0))+'🖤'.repeat(3-Math.max(S.lives,0));document.querySelector('.hud span:nth-child(3)').textContent='Skor '+S.score}
+const correct=it=>it.opts?it.opts.find(o=>o.ok).t:it.p[0].join(' ↔ ');
+function reveal(it){if(it.opts&&it.tk===undefined&&D.misi[S.m].tipe=='tap')document.querySelectorAll('.opt').forEach((b,i)=>{if(it.opts[i].ok)b.classList.add('ok')});else if(D.misi[S.m].tipe=='drag'){const s=$('#slot');s.textContent=correct(it);s.classList.add('ok')}else{const bs=[...document.querySelectorAll('.tk')];it.p[0].forEach(w=>{const b=bs.find(x=>x.textContent.toLowerCase().replace(/[^a-z]/g,'')==w);b&&b.classList.add('ok')})}}
+function summary(){const m=D.misi[S.m],mx=S.q.length*100,pct=Math.min(1,S.score/mx),st=pct>=.9?3:pct>=.7?2:pct>=.5?1:0;S.stars[S.m]=st;S.scores[S.m]=S.score;S.done[S.m]=st>=1;
+scr(`<h2>Ringkasan Misi ${S.m+1}</h2><div class="st big" style="font-size:80px">${star(st)}</div><p>Skor: <b>${S.score}</b> dari ${mx}</p><div class="card" style="background:#fff7c2"><b>Konsep kunci:</b> ${m.konsep}</div>${st?`<button class="btn gr" data-a="next" aria-label="Lanjut">Lanjut ▶</button>`:`<p>Belum lulus. Yuk coba lagi!</p>`}<button class="btn alt" data-a="go" aria-label="Coba lagi">🔁 Coba Lagi</button>`,'sum','Ringkasan misi '+(S.m+1)+'. Kamu mendapat '+st+' bintang dengan skor '+S.score+'. '+m.konsep+(st?'':' Ayo coba lagi.'))}
+function fail(){const m=D.misi[S.m];S.scores[S.m]=0;S.stars[S.m]=0;S.done[S.m]=false;scr(`<h1>😢 Misi Gagal</h1><p>Nyawa habis, tetapi kamu bisa mencoba lagi!</p><div class="card" style="background:#fff7c2"><b>Petunjuk:</b> ${m.petunjukGagal}</div><button class="btn gr" data-a="go" aria-label="Coba lagi">🔁 Coba Lagi</button><button class="btn alt" data-a="peta" aria-label="Ke peta">🗺️ Peta</button>`,'fail','Misi gagal. Nyawamu habis, tetapi jangan menyerah. '+m.petunjukGagal)}
+function hasil(){const mx=D.misi.reduce((a,m)=>a+m.tampil*100,0),pct=total()/mx,pr=pct>=.9?'🏆 Juara Kata':pct>=.7?'🥈 Pahlawan Kata':'🥉 Pejuang Kata';
+scr(`<h1>${pr}</h1><div class="map">${D.misi.map((m,i)=>`<div class="card" style="padding:10px 20px">${m.ikon} Misi ${i+1}<br><span class="st">${star(S.stars[i])}</span></div>`).join('')}</div><b>Pembahasan butir yang salah:</b><div class="list">${S.wrong.length?S.wrong.map(w=>`<div><b>Misi ${w.m+1}:</b> ${w.k.replace('___','…')}<br>✔ ${w.jawab}<br>💬 ${w.why}</div>`).join(''):'<div style="border-color:#12703c">Hebat! Tidak ada jawaban yang salah.</div>'}</div><button class="btn gr" data-a="skor" aria-label="Lihat skor akhir">Skor Akhir ▶</button>`,'hasil',pr+'. '+(S.wrong.length?'Ada '+S.wrong.length+' soal yang perlu dipelajari lagi. Baca pembahasannya ya.':'Hebat, semua jawabanmu tepat!'))}
+function skor(){const t=total();if(t>hs){hs=t;try{localStorage.setItem('kikiHS',t)}catch(e){}}
+scr(`<h1>Skor Akhir</h1><div class="big" style="font-size:90px">${t}</div><p>Skor tertinggi: <b>${hs}</b> • ⭐ ${totStars()}/9</p><button class="btn gr" data-a="main" aria-label="Main lagi">🔄 Main Lagi</button><button class="btn alt" data-a="peta" aria-label="Ulangi misi">🗺️ Ulangi Misi</button>`,'skor','Skor akhirmu '+t+'. Skor tertinggi '+hs+'. Mau main lagi?')}
+const act={
+mulai(){video()},
+lewati(){if(S.screen=='instr')return;music();instr()},
+peta(){peta()},misi(i){goal(+i)},go(){startMission()},
+hint(){if(S.hint||S.res)return;S.hint=true;$('#hb').disabled=true;setMsg('hi','💡 '+S.it.h+' (poin soal ini 50%)');say('Petunjuk. '+S.it.h)},
+lanjut(){if(S.lives<=0)return fail();S.qi++;play()},
+next(){S.m<2?peta():hasil()},hasil(){hasil()},skor(){skor()},
+main(){cover()},
+dev(){modal(`<img id="dv" alt="Foto pengembang"><p>Pengembang gim</p><p><b>${D.profil.nama}</b></p><p>${D.profil.sekolah}</p>`);say('Gim ini dibuat oleh '+D.profil.nama+' dari '+D.profil.sekolah+'.');let i=0;const im=$('#dv');im.onerror=()=>{if(++i<D.aset.pengembang.length)im.src=D.aset.pengembang[i];else im.style.display='none'};im.src=D.aset.pengembang[0]},
+tutup(){$('#modal').classList.remove('on');say(D.suara.cover)}};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;act[b.dataset.a](b.dataset.v)});
+cover();
+</script>
+</body>
+</html>
